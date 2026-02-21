@@ -22,3 +22,24 @@ export const getDaysInMonth = (year: number, month: number): number => {
     }
     return 31;
 };
+
+/**
+ * Returns the day of the week for the first day of the given month
+ * @param year 
+ * @param month 
+ * @returns day of the week (0=Sunday, 6=Saturday)
+ */
+export const getFirstDayOfMonth = (year: number, month: number): number => {
+    return new Date(year, month - 1, 1).getDay();
+};
+
+/**
+ * Returns a formatted date string in "YYYY-MM-DD" format
+ * @param year 
+ * @param month 
+ * @param day 
+ * @returns a formatted date string in "YYYY-MM-DD" format
+ */
+export const formatDate = (year: number, month: number, day: number): string => {
+    return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
+};
