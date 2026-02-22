@@ -17,12 +17,12 @@ export default function Calendar() {
     return (
         <div>
             <h1>{year}年{month}月</h1>
-            <div>
+            <div className="grid grid-cols-7">
                 {['日', '月', '火', '水', '木', '金', '土'].map((day) => (
                     <span key={day}>{day}</span>
                 ))}
             </div>
-            <div>
+            <div className="grid grid-cols-7">
                 {cells.map((day, i) => (
                     <span key={i}>{day}</span>
                 ))}
