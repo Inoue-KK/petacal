@@ -9,6 +9,10 @@ export default function Calendar() {
     const [month, setMonth] = useState(today.getMonth() + 1);
     const daysInMonth = getDaysInMonth(year, month);
     const firstDayOfWeek = getFirstDayOfMonth(year, month);
+    const cells = Array.from(
+        {length: daysInMonth + firstDayOfWeek},
+        (_, i) => i < firstDayOfWeek ? null : i - firstDayOfWeek + 1
+    );
 
     return (
         <div>
@@ -16,6 +20,11 @@ export default function Calendar() {
             <div>
                 {['日', '月', '火', '水', '木', '金', '土'].map((day) => (
                     <span key={day}>{day}</span>
+                ))}
+            </div>
+            <div>
+                {cells.map((day, i) => (
+                    <span key={i}>{day}</span>
                 ))}
             </div>
         </div>
