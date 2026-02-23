@@ -2,6 +2,7 @@
 
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
 import { useState } from "react";
+import CalendarDay from "./CalendarDay";
 
 export default function Calendar() {
   const today = new Date();
@@ -47,9 +48,7 @@ export default function Calendar() {
       </div>
       <div className="grid grid-cols-7">
         {cells.map((day, i) => (
-          <span key={i} className="text-center py-2 border">
-            {day}
-          </span>
+            <CalendarDay key={i} day={day} />
         ))}
       </div>
     </div>
