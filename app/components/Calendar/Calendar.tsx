@@ -3,11 +3,13 @@
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
 import { useState } from "react";
 import CalendarDay from "./CalendarDay";
+import { CalendarData } from "@/app/types";
 
 export default function Calendar() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
+  const [calendarData, setCalendarData] = useState<CalendarData>({});
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfMonth(year, month);
   const cells = Array.from({ length: daysInMonth + firstDayOfWeek }, (_, i) =>
@@ -48,7 +50,7 @@ export default function Calendar() {
       </div>
       <div className="grid grid-cols-7">
         {cells.map((day, i) => (
-            <CalendarDay key={i} day={day} />
+          <CalendarDay key={i} day={day} />
         ))}
       </div>
     </div>
