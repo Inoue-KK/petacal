@@ -38,6 +38,11 @@ export default function Calendar() {
 
     const currentDayData = calendarData[selectedDate];
     const currentStamps = currentDayData?.stamps || [];
+
+    if (currentStamps.some((s) => s.id === stamp.id)) {
+      return;
+    }
+
     const newStamps = [...currentStamps, stamp];
 
     setCalendarData({
@@ -98,6 +103,9 @@ export default function Calendar() {
           onClose={() => setSelectedDate(null)}
           onSelectStamp={handleSelectStamp}
           currentStampCount={calendarData[selectedDate]?.stamps.length || 0}
+          selectedStampIds={
+            calendarData[selectedDate]?.stamps.map((s) => s.id) || []
+          }
         />
       )}
     </div>

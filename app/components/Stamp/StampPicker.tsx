@@ -5,19 +5,23 @@ type StampPickerProps = {
   onClose: () => void;
   onSelectStamp: (stamp: StampType) => void;
   currentStampCount: number;
+  selectedStampIds: string[];
 };
 
 export default function StampPicker({
   onClose,
   onSelectStamp,
   currentStampCount,
+  selectedStampIds,
 }: StampPickerProps) {
   return (
     <div>
       <button onClick={onClose}>閉じる</button>
       <div>
         {STAMPS.map((stamp) => {
-          const isDisabled = currentStampCount >= 3;
+          const isMaxReached = currentStampCount >= 3;
+          const isAlreadySelected = selectedStampIds.includes(stamp.id);
+          const isDisabled = isMaxReached || isAlreadySelected;
 
           return (
             <span
