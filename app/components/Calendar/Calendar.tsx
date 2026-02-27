@@ -3,13 +3,15 @@
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
 import { useState } from "react";
 import CalendarDay from "./CalendarDay";
-import { CalendarData } from "@/app/types";
+import { CalendarData, StampType } from "@/app/types";
+import StampPicker from "../Stamp/StampPicker";
 
 export default function Calendar() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [calendarData, setCalendarData] = useState<CalendarData>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfMonth(year, month);
   const cells = Array.from({ length: daysInMonth + firstDayOfWeek }, (_, i) =>
@@ -31,6 +33,20 @@ export default function Calendar() {
       setMonth(month + 1);
     }
   };
+  const handleSelectStamp = (stamp: StampType) => {
+    if (!selectedDate) return;
+
+    const currentDayData = calendarData[selectedDate];
+    const currentStamps = currentDayData?.stamps || [];
+    const newStamps = [...currentStamps, stamp];
+
+    setCalendarData({
+      ...calendarData,
+      [selectedDate]: { date: selectedDate, stamps: newStamps },
+    });
+
+    setSelectedDate(null);
+  };
 
   return (
     <div>
@@ -50,9 +66,20 @@ export default function Calendar() {
       </div>
       <div className="grid grid-cols-7">
         {cells.map((day, i) => (
-          <CalendarDay key={i} day={day} />
+          <CalendarDay
+            key={i}
+            day={day}
+            onClick={() => day && setSelectedDate(`${year}-${month}-${day}`)}
+          />
         ))}
       </div>
+      {selectedDate && (
+        <StampPicker
+          onClose={() => setSelectedDate(null)}
+          onSelectStamp={handleSelectStamp}
+          currentStampCount={calendarData[selectedDate]?.stamps.length || 0}
+        />
+      )}
     </div>
   );
 }
