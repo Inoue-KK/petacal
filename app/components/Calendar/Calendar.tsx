@@ -48,6 +48,20 @@ export default function Calendar() {
     setSelectedDate(null);
   };
 
+  const handleDeleteStamp = (date: string, stampId: string) => {
+    const currentDayData = calendarData[date];
+    if (!currentDayData) return;
+
+    const newStamps = currentDayData.stamps.filter(
+      (stamp) => stamp.id !== stampId,
+    );
+
+    setCalendarData({
+      ...calendarData,
+      [date]: { date: date, stamps: newStamps },
+    });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-center gap-4 py-4">
@@ -70,6 +84,12 @@ export default function Calendar() {
             key={i}
             day={day}
             onClick={() => day && setSelectedDate(`${year}-${month}-${day}`)}
+            stamps={
+              day ? calendarData[`${year}-${month}-${day}`]?.stamps : undefined
+            }
+            onDeleteStamp={(stampId) =>
+              day && handleDeleteStamp(`${year}-${month}-${day}`, stampId)
+            }
           />
         ))}
       </div>
