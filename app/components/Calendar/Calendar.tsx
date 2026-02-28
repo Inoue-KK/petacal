@@ -1,7 +1,7 @@
 "use client";
 
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CalendarDay from "./CalendarDay";
 import { CalendarData, StampType } from "@/app/types";
 import StampPicker from "../Stamp/StampPicker";
@@ -17,6 +17,18 @@ export default function Calendar() {
   const cells = Array.from({ length: daysInMonth + firstDayOfWeek }, (_, i) =>
     i < firstDayOfWeek ? null : i - firstDayOfWeek + 1,
   );
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("calendarData");
+    if (savedData) {
+      setCalendarData(JSON.parse(savedData));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("calendarData", JSON.stringify(calendarData));
+  }, [calendarData]);
+
   const goToPrevMonth = () => {
     if (month === 1) {
       setYear(year - 1);
@@ -25,6 +37,7 @@ export default function Calendar() {
       setMonth(month - 1);
     }
   };
+
   const goToNextMonth = () => {
     if (month === 12) {
       setYear(year + 1);
@@ -33,6 +46,7 @@ export default function Calendar() {
       setMonth(month + 1);
     }
   };
+  
   const handleSelectStamp = (stamp: StampType) => {
     if (!selectedDate) return;
 
