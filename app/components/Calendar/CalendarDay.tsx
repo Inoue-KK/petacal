@@ -14,12 +14,15 @@ export default function CalendarDay({
   onDeleteStamp,
 }: CalendarDayProps) {
   return (
-    <span
-      className="text-center py-2 border h-20"
+    <div
+      className={`
+        min-h-24 p-2 border border-gray-200 
+        ${day ? "cursor-pointer hover:bg-blue-50 transition" : "bg-gray-50"}
+      `}
       onClick={() => day && onClick()}
     >
-      <div>{day}</div>
-      <div>
+      <div className="text-sm font-semibold text-gray-700 mb-1">{day}</div>
+      <div className="flex flex-wrap gap-1 justify-center">
         {stamps?.map((stamp) => (
           <span
             key={stamp.id}
@@ -27,11 +30,12 @@ export default function CalendarDay({
               e.stopPropagation();
               onDeleteStamp?.(stamp.id);
             }}
+            className="text-2xl cursor-pointer hover:scale-110 transition-transform"
           >
             {stamp.emoji}
           </span>
         ))}
       </div>
-    </span>
+    </div>
   );
 }
