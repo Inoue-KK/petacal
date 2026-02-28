@@ -10,6 +10,9 @@ export default function Calendar() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
+  const todayYear = today.getFullYear();
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
   const [calendarData, setCalendarData] = useState<CalendarData>({});
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const daysInMonth = getDaysInMonth(year, month);
@@ -173,6 +176,12 @@ export default function Calendar() {
                 onDeleteStamp={(stampId) =>
                   cell.isCurrentMonth &&
                   handleDeleteStamp(`${year}-${month}-${cell.day}`, stampId)
+                }
+                isToday={
+                  cell.isCurrentMonth &&
+                  year === todayYear &&
+                  month === todayMonth &&
+                  cell.day === todayDay
                 }
               />
             ))}

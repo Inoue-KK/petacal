@@ -5,6 +5,7 @@ type CalendarDayProps = {
   onClick: () => void;
   stamps?: StampType[];
   onDeleteStamp?: (stampId: string) => void;
+  isToday?: boolean;
 };
 
 export default function CalendarDay({
@@ -12,15 +13,17 @@ export default function CalendarDay({
   onClick,
   stamps,
   onDeleteStamp,
+  isToday,
 }: CalendarDayProps) {
   const { day, isCurrentMonth, isPrevMonth, isNextMonth } = cell;
 
   return (
     <div
       className={`
-        min-h-24 p-2 border border-gray-200 overflow-hidden
-        ${isCurrentMonth ? "cursor-pointer hover:bg-blue-50 transition" : ""}
-      `}
+        min-h-24 p-2 overflow-hidden
+        ${isCurrentMonth ? "bg-white cursor-pointer hover:bg-blue-50 transition" : "bg-gray-50"}
+        ${isToday ? "border-2 border-blue-400 bg-blue-50/30" : "border border-gray-200"}
+        `}
       onClick={() => isCurrentMonth && onClick()}
     >
       <div
