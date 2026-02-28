@@ -3,7 +3,7 @@
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
 import { useEffect, useState } from "react";
 import CalendarDay from "./CalendarDay";
-import { CalendarData, StampType } from "@/app/types";
+import { CalendarCell, CalendarData, StampType } from "@/app/types";
 import StampPicker from "../Stamp/StampPicker";
 
 export default function Calendar() {
@@ -14,9 +14,41 @@ export default function Calendar() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfMonth(year, month);
-  const cells = Array.from({ length: daysInMonth + firstDayOfWeek }, (_, i) =>
-    i < firstDayOfWeek ? null : i - firstDayOfWeek + 1,
-  );
+  const totalCells = 42; // 6 weeks
+  const cells: CalendarCell[] = Array.from({ length: totalCells }, (_, i) => {
+    const dayOffset = i - firstDayOfWeek + 1;
+
+    // Previous month dates
+    if (dayOffset <= 0) {
+      const prevMonth = month === 1 ? 12 : month - 1;
+      const prevYear = month === 1 ? year - 1 : year;
+      const prevMonthDays = getDaysInMonth(prevYear, prevMonth);
+      return {
+        day: prevMonthDays + dayOffset,
+        isPrevMonth: true,
+        isCurrentMonth: false,
+        isNextMonth: false,
+      };
+    }
+
+    // Next month dates
+    if (dayOffset > daysInMonth) {
+      return {
+        day: dayOffset - daysInMonth,
+        isPrevMonth: false,
+        isCurrentMonth: false,
+        isNextMonth: true,
+      };
+    }
+
+    // Current month dates
+    return {
+      day: dayOffset,
+      isPrevMonth: false,
+      isCurrentMonth: true,
+      isNextMonth: false,
+    };
+  });
 
   useEffect(() => {
     const savedData = localStorage.getItem("calendarData");
@@ -125,20 +157,22 @@ export default function Calendar() {
 
           {/* カレンダーの日付 */}
           <div className="grid grid-cols-7">
-            {cells.map((day, i) => (
+            {cells.map((cell, i) => (
               <CalendarDay
                 key={i}
-                day={day}
+                cell={cell}
                 onClick={() =>
-                  day && setSelectedDate(`${year}-${month}-${day}`)
+                  cell.isCurrentMonth &&
+                  setSelectedDate(`${year}-${month}-${cell.day}`)
                 }
                 stamps={
-                  day
-                    ? calendarData[`${year}-${month}-${day}`]?.stamps
+                  cell.isCurrentMonth
+                    ? calendarData[`${year}-${month}-${cell.day}`]?.stamps
                     : undefined
                 }
                 onDeleteStamp={(stampId) =>
-                  day && handleDeleteStamp(`${year}-${month}-${day}`, stampId)
+                  cell.isCurrentMonth &&
+                  handleDeleteStamp(`${year}-${month}-${cell.day}`, stampId)
                 }
               />
             ))}

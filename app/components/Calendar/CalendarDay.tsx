@@ -1,27 +1,33 @@
-import { StampType } from "@/app/types";
+import { CalendarCell, StampType } from "@/app/types";
 
 type CalendarDayProps = {
-  day: number | null;
+  cell: CalendarCell;
   onClick: () => void;
   stamps?: StampType[];
   onDeleteStamp?: (stampId: string) => void;
 };
 
 export default function CalendarDay({
-  day,
+  cell,
   onClick,
   stamps,
   onDeleteStamp,
 }: CalendarDayProps) {
+  const { day, isCurrentMonth, isPrevMonth, isNextMonth } = cell;
+
   return (
     <div
       className={`
         min-h-24 p-2 border border-gray-200 overflow-hidden
-        ${day ? "cursor-pointer hover:bg-blue-50 transition" : "bg-gray-50"}
+        ${isCurrentMonth ? "cursor-pointer hover:bg-blue-50 transition" : ""}
       `}
-      onClick={() => day && onClick()}
+      onClick={() => isCurrentMonth && onClick()}
     >
-      <div className="text-sm font-semibold text-gray-700 mb-1">{day}</div>
+      <div
+        className={`text-sm font-semibold mb-1 ${isCurrentMonth ? "text-gray-700" : "text-gray-400"}`}
+      >
+        {day}
+      </div>
       <div className="flex flex-wrap gap-0.5 justify-center items-center h-10">
         {stamps?.map((stamp) => (
           <span
