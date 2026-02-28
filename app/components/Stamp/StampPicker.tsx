@@ -28,7 +28,7 @@ export default function StampPicker({
         </div>
         <div className="grid grid-cols-4 gap-4">
           {STAMPS.map((stamp) => {
-            const isMaxReached = currentStampCount >= 3;
+            const isMaxReached = currentStampCount >= 4;
             const isAlreadySelected = selectedStampIds.includes(stamp.id);
             const isDisabled = isMaxReached || isAlreadySelected;
 
