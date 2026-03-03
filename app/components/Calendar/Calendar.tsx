@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 import CalendarDay from "./CalendarDay";
 import { CalendarCell, CalendarData, StampType } from "@/app/types";
 import StampPicker from "../Stamp/StampPicker";
+import { useTheme } from "@/app/context/ThemeContext";
+import { THEME_COLORS } from "@/app/utils/themes";
+import ThemeSelector from "../ThemeSelector";
 
 export default function Calendar() {
+  const { theme } = useTheme();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
@@ -117,13 +121,21 @@ export default function Calendar() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-2 md:py-8">
+    <div className="min-h-screen py-2 md:py-8" style={{ backgroundColor: THEME_COLORS[theme].bg }}>
       <div className="max-w-4xl mx-auto px-2 md:px-4">
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <ThemeSelector />
+        <div className="rounded-lg shadow-md p-6 mb-6" style={{ backgroundColor: THEME_COLORS[theme].main }}>
           <div className="flex items-center justify-between">
             <button
               onClick={goToPrevMonth}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="px-4 py-2 text-white rounded-lg transition"
+              style={{ backgroundColor: THEME_COLORS[theme].accent }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].accent;
+              }}
             >
               ← 前月
             </button>
@@ -132,7 +144,14 @@ export default function Calendar() {
             </h1>
             <button
               onClick={goToNextMonth}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="px-4 py-2 bg-${theme} text-white rounded-lg hover:bg-${theme}-hover transition"
+              style={{ backgroundColor: THEME_COLORS[theme].accent }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].accent;
+              }}
             >
               次月 →
             </button>
@@ -141,7 +160,7 @@ export default function Calendar() {
 
         {/* 曜日ヘッダー */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="grid grid-cols-7 bg-gray-100">
+          <div className="grid grid-cols-7" style={{ backgroundColor: THEME_COLORS[theme].main }}>
             {["日", "月", "火", "水", "木", "金", "土"].map((day, index) => (
               <div
                 key={day}

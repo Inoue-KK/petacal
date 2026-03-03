@@ -1,3 +1,5 @@
+import { useTheme } from "@/app/context/ThemeContext";
+import { THEME_COLORS } from "@/app/utils/themes";
 import { CalendarCell, StampType } from "@/app/types";
 
 type CalendarDayProps = {
@@ -15,15 +17,36 @@ export default function CalendarDay({
   onDeleteStamp,
   isToday,
 }: CalendarDayProps) {
+  const { theme } = useTheme();
   const { day, isCurrentMonth, isPrevMonth, isNextMonth } = cell;
 
   return (
     <div
       className={`
-        min-h-24 p-2 overflow-hidden
-        ${isCurrentMonth ? "bg-white cursor-pointer hover:bg-blue-50 transition" : "bg-gray-50"}
-        ${isToday ? "border-2 border-blue-400 bg-blue-50/30" : "border border-gray-200"}
-        `}
+      min-h-24 p-2 overflow-hidden transition
+      ${isCurrentMonth ? "bg-white cursor-pointer" : "bg-gray-50"}
+      ${isToday ? "border-2" : "border border-gray-200"}
+    `}
+      style={
+        isCurrentMonth
+          ? isToday
+            ? {
+                borderColor: THEME_COLORS[theme].border,
+                backgroundColor: THEME_COLORS[theme].light + "4D", // 30% opacity
+              }
+            : {}
+          : {}
+      }
+      onMouseEnter={(e) => {
+        if (isCurrentMonth && !isToday) {
+          e.currentTarget.style.backgroundColor = THEME_COLORS[theme].light;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (isCurrentMonth && !isToday) {
+          e.currentTarget.style.backgroundColor = "white";
+        }
+      }}
       onClick={() => isCurrentMonth && onClick()}
     >
       <div
