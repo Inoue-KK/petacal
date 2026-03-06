@@ -4,7 +4,7 @@ import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
 import { useEffect, useState } from "react";
 import CalendarDay from "./CalendarDay";
 import { CalendarCell, CalendarData, StampType } from "@/app/types";
-import StampPicker from "../Stamp/StampPicker";
+import DayDetailModal from "../Stamp/DayDetailModal";
 import { useTheme } from "@/app/context/ThemeContext";
 import { THEME_COLORS } from "@/app/utils/themes";
 import ThemeSelector from "../ThemeSelector";
@@ -86,55 +86,67 @@ export default function Calendar() {
     }
   };
 
-  const handleSelectStamp = (stamp: StampType) => {
+  const dateKey = (day: number) => `${year}-${month}-${day}`;
+
+  const handleAddStamp = (stamp: StampType) => {
     if (!selectedDate) return;
-
-    const currentDayData = calendarData[selectedDate];
-    const currentStamps = currentDayData?.stamps || [];
-
-    if (currentStamps.some((s) => s.id === stamp.id)) {
-      return;
-    }
-
-    const newStamps = [...currentStamps, stamp];
-
+    const current = calendarData[selectedDate]?.stamps || [];
+    if (current.some((s) => s.id === stamp.id) || current.length >= 4) return;
     setCalendarData({
       ...calendarData,
-      [selectedDate]: { date: selectedDate, stamps: newStamps },
+      [selectedDate]: { date: selectedDate, stamps: [...current, stamp] },
     });
-
-    setSelectedDate(null);
   };
 
-  const handleDeleteStamp = (date: string, stampId: string) => {
-    const currentDayData = calendarData[date];
-    if (!currentDayData) return;
-
-    const newStamps = currentDayData.stamps.filter(
-      (stamp) => stamp.id !== stampId,
-    );
-
+  const handleDeleteStamp = (stampId: string) => {
+    if (!selectedDate) return;
+    const current = calendarData[selectedDate]?.stamps || [];
     setCalendarData({
       ...calendarData,
-      [date]: { date: date, stamps: newStamps },
+      [selectedDate]: {
+        date: selectedDate,
+        stamps: current.filter((s) => s.id !== stampId),
+      },
     });
   };
+
+  const handleUpdateComment = (stampId: string, comment: string) => {
+    if (!selectedDate) return;
+    const current = calendarData[selectedDate]?.stamps || [];
+    setCalendarData({
+      ...calendarData,
+      [selectedDate]: {
+        date: selectedDate,
+        stamps: current.map((s) =>
+          s.id === stampId ? { ...s, comment } : s
+        ),
+      },
+    });
+  }
 
   return (
-    <div className="min-h-screen py-2 md:py-8" style={{ backgroundColor: THEME_COLORS[theme].bg }}>
+    <div
+      className="min-h-screen py-2 md:py-8"
+      style={{ backgroundColor: THEME_COLORS[theme].bg }}
+    >
       <div className="max-w-4xl mx-auto px-2 md:px-4">
         <ThemeSelector />
-        <div className="rounded-lg shadow-md p-6 mb-6" style={{ backgroundColor: THEME_COLORS[theme].main }}>
+        <div
+          className="rounded-lg shadow-md p-6 mb-6"
+          style={{ backgroundColor: THEME_COLORS[theme].main }}
+        >
           <div className="flex items-center justify-between">
             <button
               onClick={goToPrevMonth}
               className="px-4 py-2 text-white rounded-lg transition"
               style={{ backgroundColor: THEME_COLORS[theme].accent }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].hover;
+                e.currentTarget.style.backgroundColor =
+                  THEME_COLORS[theme].hover;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].accent;
+                e.currentTarget.style.backgroundColor =
+                  THEME_COLORS[theme].accent;
               }}
             >
               ← 前月
@@ -147,10 +159,12 @@ export default function Calendar() {
               className="px-4 py-2 bg-${theme} text-white rounded-lg hover:bg-${theme}-hover transition"
               style={{ backgroundColor: THEME_COLORS[theme].accent }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].hover;
+                e.currentTarget.style.backgroundColor =
+                  THEME_COLORS[theme].hover;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = THEME_COLORS[theme].accent;
+                e.currentTarget.style.backgroundColor =
+                  THEME_COLORS[theme].accent;
               }}
             >
               次月 →
@@ -160,7 +174,10 @@ export default function Calendar() {
 
         {/* 曜日ヘッダー */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="grid grid-cols-7" style={{ backgroundColor: THEME_COLORS[theme].main }}>
+          <div
+            className="grid grid-cols-7"
+            style={{ backgroundColor: THEME_COLORS[theme].main }}
+          >
             {["日", "月", "火", "水", "木", "金", "土"].map((day, index) => (
               <div
                 key={day}
@@ -185,16 +202,12 @@ export default function Calendar() {
                 cell={cell}
                 onClick={() =>
                   cell.isCurrentMonth &&
-                  setSelectedDate(`${year}-${month}-${cell.day}`)
+                  setSelectedDate(dateKey(cell.day))
                 }
                 stamps={
                   cell.isCurrentMonth
-                    ? calendarData[`${year}-${month}-${cell.day}`]?.stamps
+                    ? calendarData[dateKey(cell.day)]?.stamps
                     : undefined
-                }
-                onDeleteStamp={(stampId) =>
-                  cell.isCurrentMonth &&
-                  handleDeleteStamp(`${year}-${month}-${cell.day}`, stampId)
                 }
                 isToday={
                   cell.isCurrentMonth &&
@@ -207,13 +220,13 @@ export default function Calendar() {
           </div>
         </div>
         {selectedDate && (
-          <StampPicker
+          <DayDetailModal
+            date={selectedDate}
+            stamps={calendarData[selectedDate]?.stamps || []}
             onClose={() => setSelectedDate(null)}
-            onSelectStamp={handleSelectStamp}
-            currentStampCount={calendarData[selectedDate]?.stamps.length || 0}
-            selectedStampIds={
-              calendarData[selectedDate]?.stamps.map((s) => s.id) || []
-            }
+            onAddStamp={handleAddStamp}
+            onDeleteStamp={handleDeleteStamp}
+            onUpdateComment={handleUpdateComment}
           />
         )}
       </div>

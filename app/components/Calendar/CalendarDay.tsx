@@ -6,7 +6,6 @@ type CalendarDayProps = {
   cell: CalendarCell;
   onClick: () => void;
   stamps?: StampType[];
-  onDeleteStamp?: (stampId: string) => void;
   isToday?: boolean;
 };
 
@@ -14,7 +13,6 @@ export default function CalendarDay({
   cell,
   onClick,
   stamps,
-  onDeleteStamp,
   isToday,
 }: CalendarDayProps) {
   const { theme } = useTheme();
@@ -56,14 +54,7 @@ export default function CalendarDay({
       </div>
       <div className="flex flex-wrap gap-0.5 justify-center items-center h-10">
         {stamps?.map((stamp) => (
-          <span
-            key={stamp.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteStamp?.(stamp.id);
-            }}
-            className="text-base cursor-pointer hover:scale-110 transition-transform leading-none"
-          >
+          <span key={stamp.id} className="text-base leading-none">
             {stamp.emoji}
           </span>
         ))}

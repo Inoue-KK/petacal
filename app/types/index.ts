@@ -3,6 +3,7 @@ export type StampType = {
   id: string;
   emoji: string;
   label: string;
+  comment: string;
 };
 
 // Data for a single day
