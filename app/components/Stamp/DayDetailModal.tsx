@@ -73,6 +73,11 @@ export default function DayDetailModal({
     });
   };
 
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.scrollLeft += e.deltaY;
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
@@ -144,6 +149,7 @@ export default function DayDetailModal({
               <div
                 className="flex overflow-x-auto stamp-category-scroll"
                 style={{ backgroundColor: colors.main }}
+                onWheel={handleWheel}
               >
                 {allCategories.map((cat) => (
                   <button
