@@ -14,6 +14,28 @@ export const STAMP_CATEGORIES = [
   { id: "mark", label: "🔖 マーク" },
 ];
 
+const RECENT_STAMPS_KEY = "recentStampIds";
+const RECENT_STAMPS_MAX = 10;
+
+export function getRecentStampIds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_STAMPS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addRecentStampId(id: string): void {
+  const recent = getRecentStampIds().filter((r) => r !== id);
+  recent.unshift(id);
+  localStorage.setItem(
+    RECENT_STAMPS_KEY,
+    JSON.stringify(recent.slice(0, RECENT_STAMPS_MAX)),
+  );
+}
+
 export const STAMPS: StampDef[] = [
   // 気分・体調
   { id: "mood_great", emoji: "🥳", label: "ハッピー", category: "mood" },

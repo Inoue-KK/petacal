@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StampType } from "@/app/types";
-import { STAMPS, STAMP_CATEGORIES } from "@/app/utils/stamps";
+import {
+  STAMPS,
+  STAMP_CATEGORIES,
+  addRecentStampId,
+  getRecentStampIds,
+} from "@/app/utils/stamps";
 import { useTheme } from "@/app/context/ThemeContext";
 import { THEME_COLORS } from "@/app/utils/themes";
 
@@ -26,19 +31,40 @@ export default function DayDetailModal({
   const { theme } = useTheme();
   const colors = THEME_COLORS[theme];
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(STAMP_CATEGORIES[0].id);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState("mood");
+
+  useEffect(() => {
+    const ids = getRecentStampIds();
+    if (ids.length > 0) {
+      setRecentIds(ids);
+      setActiveCategory("recent");
+    }
+  }, []);
+
+  const recentCategory = { id: "recent", label: "🕒最近" };
+  const allCategories =
+    recentIds.length > 0
+      ? [recentCategory, ...STAMP_CATEGORIES]
+      : STAMP_CATEGORIES;
 
   const isMaxReached = stamps.length >= 4;
   const selectedStampIds = stamps.map((s) => s.id);
 
   const [y, m, d] = date.split("-");
   const displayDate = `${y}年${m}月${d}日`;
-  console.log("date:", date);
 
-  const filteredStamps = STAMPS.filter((s) => s.category === activeCategory);
+  const filteredStamps =
+    activeCategory === "recent"
+      ? (recentIds
+          .map((id) => STAMPS.find((s) => s.id === id))
+          .filter(Boolean) as typeof STAMPS)
+      : STAMPS.filter((s) => s.category === activeCategory);
 
   const handleAddStamp = (stampDef: (typeof STAMPS)[number]) => {
     if (isMaxReached || selectedStampIds.includes(stampDef.id)) return;
+    addRecentStampId(stampDef.id);
+    setRecentIds(getRecentStampIds());
     onAddStamp({
       id: stampDef.id,
       emoji: stampDef.emoji,
@@ -82,7 +108,6 @@ export default function DayDetailModal({
               >
                 <span className="text-2xl mt-0.5">{stamp.emoji}</span>
                 <div className="flex-1 min-w-0">
-
                   <textarea
                     value={stamp.comment}
                     onChange={(e) => onUpdateComment(stamp.id, e.target.value)}
@@ -120,7 +145,7 @@ export default function DayDetailModal({
                 className="flex overflow-x-auto stamp-category-scroll"
                 style={{ backgroundColor: colors.main }}
               >
-                {STAMP_CATEGORIES.map((cat) => (
+                {allCategories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
