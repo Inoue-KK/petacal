@@ -169,7 +169,7 @@ export default function DayDetailModal({
                 ))}
               </div>
 
-              <div className="grid grid-cols-5 gap-1 p-3 bg-white">
+              <div className="grid grid-cols-5 gap-1 p-3 bg-white h-48 overflow-y-auto">
                 {filteredStamps.map((stampDef) => {
                   const alreadySelected = selectedStampIds.includes(
                     stampDef.id,
