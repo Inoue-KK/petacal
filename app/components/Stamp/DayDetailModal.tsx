@@ -123,7 +123,7 @@ export default function DayDetailModal({
                 </div>
                 <button
                   onClick={() => onDeleteStamp(stamp.id)}
-                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-400 transition flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold"
+                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-400 transition flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold"
                 >
                   ✕
                 </button>
@@ -155,7 +155,7 @@ export default function DayDetailModal({
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className="flex-shrink-0 px-3 py-2 text-xs font-semibold transition"
+                    className="shrink-0 px-3 py-2 text-xs font-semibold transition"
                     style={{
                       backgroundColor:
                         activeCategory === cat.id
