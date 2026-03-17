@@ -8,9 +8,11 @@ import DayDetailModal from "../Stamp/DayDetailModal";
 import { useTheme } from "@/app/context/ThemeContext";
 import { THEME_COLORS } from "@/app/utils/themes";
 import ThemeSelector from "../ThemeSelector";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Calendar() {
   const { theme } = useTheme();
+  const { signOut } = useAuth();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
@@ -117,12 +119,10 @@ export default function Calendar() {
       ...calendarData,
       [selectedDate]: {
         date: selectedDate,
-        stamps: current.map((s) =>
-          s.id === stampId ? { ...s, comment } : s
-        ),
+        stamps: current.map((s) => (s.id === stampId ? { ...s, comment } : s)),
       },
     });
-  }
+  };
 
   return (
     <div
@@ -130,7 +130,23 @@ export default function Calendar() {
       style={{ backgroundColor: THEME_COLORS[theme].bg }}
     >
       <div className="max-w-4xl mx-auto px-2 md:px-4">
-        <ThemeSelector />
+        <div className="flex items-center justify-between mb-4">
+          <ThemeSelector />
+          <button
+            onClick={signOut}
+            className="px-4 py-2 text-sm text-white rounded-lg shadow transition"
+            style={{ backgroundColor: THEME_COLORS[theme].accent }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = THEME_COLORS[theme].hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor =
+                THEME_COLORS[theme].accent;
+            }}
+          >
+            ログアウト
+          </button>
+        </div>{" "}
         <div
           className="rounded-lg shadow-md p-6 mb-6"
           style={{ backgroundColor: THEME_COLORS[theme].main }}
@@ -171,7 +187,6 @@ export default function Calendar() {
             </button>
           </div>
         </div>
-
         {/* 曜日ヘッダー */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div
@@ -201,8 +216,7 @@ export default function Calendar() {
                 key={i}
                 cell={cell}
                 onClick={() =>
-                  cell.isCurrentMonth &&
-                  setSelectedDate(dateKey(cell.day))
+                  cell.isCurrentMonth && setSelectedDate(dateKey(cell.day))
                 }
                 stamps={
                   cell.isCurrentMonth
