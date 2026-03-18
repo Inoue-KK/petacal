@@ -1,25 +1,27 @@
 "use client";
 
 import { getDaysInMonth, getFirstDayOfMonth } from "@/app/utils/date";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CalendarDay from "./CalendarDay";
-import { CalendarCell, CalendarData, StampType } from "@/app/types";
+import { CalendarCell, StampType } from "@/app/types";
 import DayDetailModal from "../Stamp/DayDetailModal";
 import { useTheme } from "@/app/context/ThemeContext";
 import { THEME_COLORS } from "@/app/utils/themes";
 import ThemeSelector from "../ThemeSelector";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCalendarData } from "@/app/hooks/useCalendarData";
 
 export default function Calendar() {
   const { theme } = useTheme();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth() + 1;
   const todayDay = today.getDate();
-  const [calendarData, setCalendarData] = useState<CalendarData>({});
+  const { calendarData, syncing, addStamp, deleteStamp, updateComment } =
+    useCalendarData(user!.id, year, month);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOfWeek = getFirstDayOfMonth(year, month);
@@ -59,17 +61,6 @@ export default function Calendar() {
     };
   });
 
-  useEffect(() => {
-    const savedData = localStorage.getItem("calendarData");
-    if (savedData) {
-      setCalendarData(JSON.parse(savedData));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("calendarData", JSON.stringify(calendarData));
-  }, [calendarData]);
-
   const goToPrevMonth = () => {
     if (month === 1) {
       setYear(year - 1);
@@ -91,37 +82,21 @@ export default function Calendar() {
   const dateKey = (day: number) => `${year}-${month}-${day}`;
 
   const handleAddStamp = (stamp: StampType) => {
-    if (!selectedDate) return;
-    const current = calendarData[selectedDate]?.stamps || [];
-    if (current.some((s) => s.id === stamp.id) || current.length >= 4) return;
-    setCalendarData({
-      ...calendarData,
-      [selectedDate]: { date: selectedDate, stamps: [...current, stamp] },
-    });
+    if (selectedDate) {
+      addStamp(selectedDate, stamp);
+    }
   };
 
   const handleDeleteStamp = (stampId: string) => {
-    if (!selectedDate) return;
-    const current = calendarData[selectedDate]?.stamps || [];
-    setCalendarData({
-      ...calendarData,
-      [selectedDate]: {
-        date: selectedDate,
-        stamps: current.filter((s) => s.id !== stampId),
-      },
-    });
+    if (selectedDate) {
+      deleteStamp(selectedDate, stampId);
+    }
   };
 
   const handleUpdateComment = (stampId: string, comment: string) => {
-    if (!selectedDate) return;
-    const current = calendarData[selectedDate]?.stamps || [];
-    setCalendarData({
-      ...calendarData,
-      [selectedDate]: {
-        date: selectedDate,
-        stamps: current.map((s) => (s.id === stampId ? { ...s, comment } : s)),
-      },
-    });
+    if (selectedDate) {
+      updateComment(selectedDate, stampId, comment);
+    }
   };
 
   return (
