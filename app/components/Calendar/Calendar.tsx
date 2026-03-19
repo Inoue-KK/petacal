@@ -10,13 +10,20 @@ import { THEME_COLORS } from "@/app/utils/themes";
 import ThemeSelector from "../ThemeSelector";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCalendarData } from "@/app/hooks/useCalendarData";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Calendar() {
   const { theme } = useTheme();
   const { user, signOut } = useAuth();
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth() + 1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [year, setYear] = useState(
+    Number(searchParams.get("year")) || today.getFullYear(),
+  );
+  const [month, setMonth] = useState(
+    Number(searchParams.get("month")) || today.getMonth() + 1,
+  );
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth() + 1;
   const todayDay = today.getDate();
@@ -61,21 +68,25 @@ export default function Calendar() {
     };
   });
 
+  const updateMonth = (newYear: number, newMonth: number) => {
+    setYear(newYear);
+    setMonth(newMonth);
+    router.push(`/?year=${newYear}&month=${newMonth}`);
+  };
+
   const goToPrevMonth = () => {
     if (month === 1) {
-      setYear(year - 1);
-      setMonth(12);
+      updateMonth(year - 1, 12);
     } else {
-      setMonth(month - 1);
+      updateMonth(year, month - 1);
     }
   };
 
   const goToNextMonth = () => {
     if (month === 12) {
-      setYear(year + 1);
-      setMonth(1);
+      updateMonth(year + 1, 1);
     } else {
-      setMonth(month + 1);
+      updateMonth(year, month + 1);
     }
   };
 
