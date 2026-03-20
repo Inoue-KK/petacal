@@ -11,6 +11,7 @@ import ThemeSelector from "../ThemeSelector";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCalendarData } from "@/app/hooks/useCalendarData";
 import { useRouter, useSearchParams } from "next/navigation";
+import YearMonthPicker from "./YearMonthPicker";
 
 export default function Calendar() {
   const { theme } = useTheme();
@@ -90,6 +91,8 @@ export default function Calendar() {
     }
   };
 
+  const goToToday = () => updateMonth(todayYear, todayMonth);
+
   const dateKey = (day: number) => `${year}-${month}-${day}`;
 
   const handleAddStamp = (stamp: StampType) => {
@@ -153,9 +156,15 @@ export default function Calendar() {
             >
               ← 前月
             </button>
-            <h1 className="text-2xl font-bold text-gray-800">
-              {year}年{month}月
-            </h1>
+            <div className="flex flex-col items-center gap-1">
+              <YearMonthPicker
+                year={year}
+                month={month}
+                todayYear={todayYear}
+                todayMonth={todayMonth}
+                onChange={updateMonth}
+              />
+            </div>
             <button
               onClick={goToNextMonth}
               className="px-4 py-2 bg-${theme} text-white rounded-lg hover:bg-${theme}-hover transition"
