@@ -14,11 +14,11 @@ export default function ThemeSelector() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex justify-end mb-4">
+    <div className="flex justify-end">
       <select
         value={theme}
         onChange={(e) => setTheme(e.target.value as any)}
-        className="px-4 py-2 rounded-lg border-2 bg-white cursor-pointer transition outline-none"
+        className="px-4 py-1.5 text-xs rounded-lg  bg-white cursor-pointer transition outline-none"
         style={{
           borderColor: THEME_COLORS[theme].main,
           color: THEME_COLORS[theme].border,

@@ -21,7 +21,7 @@ export default function CalendarDay({
   return (
     <div
       className={`
-      min-h-24 p-2 overflow-hidden transition
+      h-full p-2 overflow-hidden transition
       ${isCurrentMonth ? "bg-white cursor-pointer" : "bg-gray-50"}
       ${isToday ? "border-2" : "border border-gray-200"}
     `}
