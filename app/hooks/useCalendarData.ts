@@ -41,6 +41,7 @@ export const useCalendarData = (
           const master = STAMPS.find((m) => m.id === s.stamp_id);
           if (!master) return [];
           return [
+            // Falls back to plain text for backwards compatibility with unencrypted comments
             decryptComment(s.comment, userId).then((comment) => ({
               id: master.id,
               emoji: master.emoji,
@@ -116,7 +117,6 @@ export const useCalendarData = (
       const [y, m, d] = date.split("-");
       const isoDate = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-      // day_dataのidを取得
       const { data: dayData, error: dayError } = await supabase
         .from("day_data")
         .select("id")
@@ -133,6 +133,16 @@ export const useCalendarData = (
         .eq("stamp_id", stampId);
 
       if (stampError) throw stampError;
+
+      // Remove day_data if no stamps remain to avoid orphaned records
+      const { count } = await supabase
+        .from("stamps")
+        .select("*", { count: "exact", head: true })
+        .eq("day_data_id", dayData.id);
+
+      if (count === 0) {
+        await supabase.from("day_data").delete().eq("id", dayData.id);
+      }
     } catch (e) {
       console.error("deleteStamp error:", e);
       setCalendarData(calendarData);
@@ -148,7 +158,6 @@ export const useCalendarData = (
   ) => {
     const current = calendarData[date]?.stamps || [];
 
-    // 楽観的更新
     const newData = {
       ...calendarData,
       [date]: {
