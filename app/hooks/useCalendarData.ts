@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "../utils/supabase";
 import { getDaysInMonth } from "../utils/date";
 import { STAMPS } from "../utils/stamps";
+import { encryptComment, decryptComment } from "../utils/crypto";
 
 export const useCalendarData = (
   userId: string,
@@ -35,18 +36,20 @@ export const useCalendarData = (
 
     const newData: CalendarData = {};
     for (const d of dayDataList ?? []) {
-      const stamps = (d.stamps as any[]).flatMap((s) => {
-        const master = STAMPS.find((m) => m.id === s.stamp_id);
-        if (!master) return [];
-        return [
-          {
-            id: master.id,
-            emoji: master.emoji,
-            label: master.label,
-            comment: s.comment,
-          },
-        ];
-      });
+      const stamps = await Promise.all(
+        (d.stamps as any[]).flatMap((s) => {
+          const master = STAMPS.find((m) => m.id === s.stamp_id);
+          if (!master) return [];
+          return [
+            decryptComment(s.comment, userId).then((comment) => ({
+              id: master.id,
+              emoji: master.emoji,
+              label: master.label,
+              comment,
+            })),
+          ];
+        }),
+      );
 
       const [y, m, day] = d.date.split("-");
       const key = `${parseInt(y)}-${parseInt(m)}-${parseInt(day)}`;
@@ -87,7 +90,7 @@ export const useCalendarData = (
       const { error: stampError } = await supabase.from("stamps").insert({
         day_data_id: dayData.id,
         stamp_id: stamp.id,
-        comment: stamp.comment || "",
+        comment: await encryptComment(stamp.comment || "", userId),
         order_index: current.length,
       });
 
@@ -171,7 +174,7 @@ export const useCalendarData = (
 
       const { error: stampError } = await supabase
         .from("stamps")
-        .update({ comment })
+        .update({ comment: await encryptComment(comment, userId) })
         .eq("day_data_id", dayData.id)
         .eq("stamp_id", stampId);
 
