@@ -1,5 +1,5 @@
 import { CalendarData, StampType } from "../types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "../utils/supabase";
 import { getDaysInMonth } from "../utils/date";
 import { STAMPS } from "../utils/stamps";
@@ -12,7 +12,7 @@ export const useCalendarData = (
 ) => {
   const [calendarData, setCalendarData] = useState<CalendarData>({});
   const [syncing, setSyncing] = useState(false);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     fetchMonthData();
@@ -140,7 +140,7 @@ export const useCalendarData = (
         .select("*", { count: "exact", head: true })
         .eq("day_data_id", dayData.id);
 
-      if (count === 0) {
+      if ((count ?? 1) === 0) {
         await supabase.from("day_data").delete().eq("id", dayData.id);
       }
     } catch (e) {
