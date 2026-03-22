@@ -54,7 +54,7 @@ export default function CalendarDay({
       </div>
       <div className="flex flex-wrap gap-0.5 justify-center items-center h-10">
         {stamps?.map((stamp) => (
-          <span key={stamp.id} className="text-base leading-none">
+          <span key={stamp.id} className="text-lg leading-none">
             {stamp.emoji}
           </span>
         ))}
