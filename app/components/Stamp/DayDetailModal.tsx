@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StampType } from "@/app/types";
 import {
   STAMPS,
@@ -19,6 +19,69 @@ type DayDetailModalProps = {
   onDeleteStamp: (stampId: string) => void;
   onUpdateComment: (stampId: string, comment: string) => void;
 };
+
+function StampComment({
+  stamp,
+  onUpdateComment,
+  colors,
+  onDelete,
+}: {
+  stamp: StampType;
+  onUpdateComment: (stampId: string, comment: string) => void;
+  colors: (typeof THEME_COLORS)[keyof typeof THEME_COLORS];
+  onDelete: () => void;
+}) {
+  const [comment, setComment] = useState(stamp.comment);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle",
+  );
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChange = (value: string) => {
+    setComment(value);
+    setSaveStatus("saving");
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (savedTimer.current) clearTimeout(savedTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      onUpdateComment(stamp.id, value);
+      setSaveStatus("saved");
+      savedTimer.current = setTimeout(() => setSaveStatus("idle"), 2000);
+    }, 500);
+  };
+
+  return (
+    <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50">
+      <span className="text-2xl mt-0.5">{stamp.emoji}</span>
+      <div className="flex-1 min-w-0">
+        <textarea
+          value={comment}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="メモを入力..."
+          rows={2}
+          className="w-full text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:border-gray-400 transition"
+        />
+        <p
+          className="text-[10px] mt-0.5 h-3 transition-opacity duration-300"
+          style={{
+            color: colors.border,
+            opacity: saveStatus === "idle" ? 0 : 1,
+          }}
+        >
+          {saveStatus === "saving" ? "保存中..." : "✓ 保存済み"}
+        </p>
+      </div>
+      <button
+        onClick={onDelete}
+        className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-400 transition flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
 
 export default function DayDetailModal({
   date,
@@ -107,27 +170,13 @@ export default function DayDetailModal({
             </p>
           ) : (
             stamps.map((stamp) => (
-              <div
+              <StampComment
                 key={stamp.id}
-                className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50"
-              >
-                <span className="text-2xl mt-0.5">{stamp.emoji}</span>
-                <div className="flex-1 min-w-0">
-                  <textarea
-                    value={stamp.comment}
-                    onChange={(e) => onUpdateComment(stamp.id, e.target.value)}
-                    placeholder="メモを入力..."
-                    rows={2}
-                    className="w-full text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:border-gray-400 transition"
-                  />
-                </div>
-                <button
-                  onClick={() => onDeleteStamp(stamp.id)}
-                  className="w-6 h-6 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-400 transition flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold"
-                >
-                  ✕
-                </button>
-              </div>
+                stamp={stamp}
+                onUpdateComment={onUpdateComment}
+                colors={colors}
+                onDelete={() => onDeleteStamp(stamp.id)}
+              />
             ))
           )}
 
