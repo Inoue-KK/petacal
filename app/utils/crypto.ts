@@ -1,7 +1,9 @@
 const PBKDF2_ITERATIONS = 100000;
-const SALT = "petacal-comment-salt";
 
-async function deriveKey(userId: string): Promise<CryptoKey> {
+async function deriveKey(
+  userId: string,
+  salt: Uint8Array<ArrayBuffer>,
+): Promise<CryptoKey> {
   const raw = new TextEncoder().encode(userId);
   const base = await crypto.subtle.importKey("raw", raw, "PBKDF2", false, [
     "deriveKey",
@@ -9,7 +11,7 @@ async function deriveKey(userId: string): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: new TextEncoder().encode(SALT),
+      salt,
       iterations: PBKDF2_ITERATIONS,
       hash: "SHA-256",
     },
@@ -25,17 +27,21 @@ export async function encryptComment(
   userId: string,
 ): Promise<string> {
   if (!text) return "";
-  const key = await deriveKey(userId);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
   const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(userId, salt);
   const encoded = new TextEncoder().encode(text);
   const cipher = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
     key,
     encoded,
   );
-  const combined = new Uint8Array(iv.byteLength + cipher.byteLength);
-  combined.set(iv, 0);
-  combined.set(new Uint8Array(cipher), iv.byteLength);
+  const combined = new Uint8Array(
+    salt.byteLength + iv.byteLength + cipher.byteLength,
+  );
+  combined.set(salt, 0);
+  combined.set(iv, salt.byteLength);
+  combined.set(new Uint8Array(cipher), salt.byteLength + iv.byteLength);
   return btoa(String.fromCharCode(...combined));
 }
 
@@ -46,16 +52,17 @@ export async function decryptComment(
   if (!encrypted) return "";
   try {
     const combined = Uint8Array.from(atob(encrypted), (c) => c.charCodeAt(0));
-    const iv = combined.slice(0, 12);
-    const cipher = combined.slice(12);
-    const key = await deriveKey(userId);
+    const salt = combined.slice(0, 16);
+    const iv = combined.slice(16, 28);
+    const cipher = combined.slice(28);
+    const key = await deriveKey(userId, salt);
     const decrypted = await crypto.subtle.decrypt(
       { name: "AES-GCM", iv },
       key,
       cipher,
     );
     return new TextDecoder().decode(decrypted);
-  } catch (error) {
+  } catch {
     return encrypted;
   }
 }
