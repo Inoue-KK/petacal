@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Shrikhand } from "next/font/google";
 import { Kiwi_Maru } from "next/font/google";
 
@@ -16,7 +16,37 @@ const kiwiMaru = Kiwi_Maru({
   subsets: ["latin"],
 });
 
+type Bubble = {
+  size: number;
+  color: string;
+  top?: number | string;
+  left?: number | string;
+  right?: number | string;
+  bottom?: number | string;
+};
+
 export default function LoginPage() {
+  const [particles] = useState(() => {
+  const colors = [
+    "rgba(180,210,255,0.8)",
+    "rgba(220,180,255,0.8)",
+    "rgba(255,200,230,0.8)",
+    "rgba(160,230,210,0.8)",
+    "rgba(255,230,160,0.8)",
+  ];
+  return Array.from({ length: 28 }).map((_, i) => {
+    const size = Math.random() * 4 + 2;
+    return {
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      width: size,
+      height: size,
+      background: colors[i % colors.length],
+      animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite ${Math.random() * 4}s`,
+    };
+  });
+});
+
   const { user, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
 
@@ -182,30 +212,9 @@ export default function LoginPage() {
 
       {/* particles */}
       <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 28 }).map((_, i) => {
-          const colors = [
-            "rgba(180,210,255,0.8)",
-            "rgba(220,180,255,0.8)",
-            "rgba(255,200,230,0.8)",
-            "rgba(160,230,210,0.8)",
-            "rgba(255,230,160,0.8)",
-          ];
-          const size = Math.random() * 4 + 2;
-          return (
-            <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: size,
-                height: size,
-                background: colors[i % colors.length],
-                animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite ${Math.random() * 4}s`,
-              }}
-            />
-          );
-        })}
+        {particles.map((p, i) => (
+          <div key={i} className="absolute rounded-full" style={p} />
+        ))}
       </div>
 
       {/* orbit system */}
@@ -475,29 +484,41 @@ export default function LoginPage() {
           }}
         >
           {/* inner bubbles */}
-          {[
-            { size: 80, top: -30, left: -30, color: "rgba(180,210,255,0.2)" },
-            { size: 60, top: -20, right: -20, color: "rgba(220,180,255,0.2)" },
-            { size: 50, top: 80, right: -15, color: "rgba(255,220,240,0.18)" },
-            {
-              size: 70,
-              bottom: 60,
-              left: -20,
-              color: "rgba(200,230,255,0.18)",
-            },
-            {
-              size: 90,
-              bottom: -30,
-              left: "50%",
-              color: "rgba(255,200,230,0.15)",
-            },
-            {
-              size: 40,
-              top: "40%",
-              left: -10,
-              color: "rgba(210,190,255,0.18)",
-            },
-          ].map((b, i) => (
+          {(
+            [
+              { size: 80, top: -30, left: -30, color: "rgba(180,210,255,0.2)" },
+              {
+                size: 60,
+                top: -20,
+                right: -20,
+                color: "rgba(220,180,255,0.2)",
+              },
+              {
+                size: 50,
+                top: 80,
+                right: -15,
+                color: "rgba(255,220,240,0.18)",
+              },
+              {
+                size: 70,
+                bottom: 60,
+                left: -20,
+                color: "rgba(200,230,255,0.18)",
+              },
+              {
+                size: 90,
+                bottom: -30,
+                left: "50%",
+                color: "rgba(255,200,230,0.15)",
+              },
+              {
+                size: 40,
+                top: "40%",
+                left: -10,
+                color: "rgba(210,190,255,0.18)",
+              },
+            ] as Bubble[]
+          ).map((b, i) => (
             <div
               key={i}
               className="absolute rounded-full pointer-events-none"
@@ -506,8 +527,8 @@ export default function LoginPage() {
                 height: b.size,
                 top: b.top,
                 left: b.left,
-                right: (b as any).right,
-                bottom: (b as any).bottom,
+                right: b.right,
+                bottom: b.bottom,
                 background: b.color,
                 border: "1px solid rgba(255,255,255,0.7)",
                 transform: b.left === "50%" ? "translateX(-50%)" : undefined,

@@ -4,7 +4,6 @@ import {
   createContext,
   ReactNode,
   useContext,
-  useEffect,
   useState,
 } from "react";
 
@@ -18,20 +17,12 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("turquoise");
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, []);
-
-  // Save theme to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Return default value during SSR since localStorage is browser-only
+    if (typeof window === "undefined") return "turquoise";
+    const saved = localStorage.getItem("theme") as Theme;
+    return saved || "turquoise";
+  });
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

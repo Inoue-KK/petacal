@@ -2,6 +2,7 @@
 
 import { useTheme } from "../context/ThemeContext";
 import { THEME_COLORS } from "../utils/themes";
+import { Theme } from "../utils/themes";
 
 const THEMES = [
   { id: "turquoise" as const, name: "Turquoise" },
@@ -17,7 +18,7 @@ export default function ThemeSelector() {
     <div className="flex justify-end">
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as any)}
+        onChange={(e) => setTheme(e.target.value as Theme)}
         className="px-4 py-1.5 text-xs rounded-lg  bg-white cursor-pointer transition outline-none"
         style={{
           borderColor: THEME_COLORS[theme].main,

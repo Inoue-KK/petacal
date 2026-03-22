@@ -16,7 +16,7 @@ export default function CalendarDay({
   isToday,
 }: CalendarDayProps) {
   const { theme } = useTheme();
-  const { day, isCurrentMonth, isPrevMonth, isNextMonth } = cell;
+  const { day, isCurrentMonth } = cell;
 
   return (
     <div

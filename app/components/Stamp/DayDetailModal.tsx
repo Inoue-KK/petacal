@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { StampType } from "@/app/types";
 import {
   STAMPS,
@@ -94,16 +94,11 @@ export default function DayDetailModal({
   const { theme } = useTheme();
   const colors = THEME_COLORS[theme];
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [recentIds, setRecentIds] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState("mood");
-
-  useEffect(() => {
+  const [recentIds, setRecentIds] = useState<string[]>(() => getRecentStampIds());
+  const [activeCategory, setActiveCategory] = useState(() => {
     const ids = getRecentStampIds();
-    if (ids.length > 0) {
-      setRecentIds(ids);
-      setActiveCategory("recent");
-    }
-  }, []);
+    return ids.length > 0 ? "recent" : "mood";
+  });
 
   const recentCategory = { id: "recent", label: "🕒最近" };
   const allCategories =

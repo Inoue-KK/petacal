@@ -38,7 +38,7 @@ export default function Calendar() {
   const todayMonth = today.getMonth() + 1;
   const todayDay = today.getDate();
 
-  const { calendarData, syncing, addStamp, deleteStamp, updateComment } =
+  const { calendarData, addStamp, deleteStamp, updateComment } =
     useCalendarData(user!.id, year, month);
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -102,8 +102,6 @@ export default function Calendar() {
       updateMonth(year, month + 1);
     }
   };
-
-  const goToToday = () => updateMonth(todayYear, todayMonth);
 
   const dateKey = (day: number) => `${year}-${month}-${day}`;
 
