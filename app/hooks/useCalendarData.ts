@@ -1,5 +1,5 @@
 import { CalendarData, StampType } from "../types";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "../utils/supabase";
 import { getDaysInMonth } from "../utils/date";
 import { STAMPS } from "../utils/stamps";
@@ -14,11 +14,7 @@ export const useCalendarData = (
   const [syncing, setSyncing] = useState(false);
   const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    fetchMonthData();
-  }, [userId, year, month]);
-
-  const fetchMonthData = async () => {
+  const fetchMonthData = useCallback(async () => {
     const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
     const endDate = `${year}-${String(month).padStart(2, "0")}-${String(getDaysInMonth(year, month)).padStart(2, "0")}`;
 
@@ -29,35 +25,43 @@ export const useCalendarData = (
       .gte("date", startDate)
       .lte("date", endDate);
 
-    if (error) {
-      console.error("fetch error:", JSON.stringify(error));
-      return;
-    }
+      if (error) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("fetch error:", JSON.stringify(error));
+        }
+        return;
+      }
+
+    type StampRaw = { stamp_id: string; comment: string };
 
     const newData: CalendarData = {};
     for (const d of dayDataList ?? []) {
-      const stamps = await Promise.all(
-        (d.stamps as any[]).flatMap((s) => {
-          const master = STAMPS.find((m) => m.id === s.stamp_id);
-          if (!master) return [];
-          return [
-            // Falls back to plain text for backwards compatibility with unencrypted comments
-            decryptComment(s.comment, userId).then((comment) => ({
+      if (!Array.isArray(d.stamps)) continue;
+      const stamps = (
+        await Promise.all(
+          (d.stamps as StampRaw[]).map((s) => {
+            const master = STAMPS.find((m) => m.id === s.stamp_id);
+            if (!master) return null;
+            return decryptComment(s.comment, userId).then((comment) => ({
               id: master.id,
               emoji: master.emoji,
               label: master.label,
               comment,
-            })),
-          ];
-        }),
-      );
+            }));
+          }),
+        )
+      ).filter((s): s is StampType => s !== null);
 
       const [y, m, day] = d.date.split("-");
       const key = `${parseInt(y)}-${parseInt(m)}-${parseInt(day)}`;
       newData[key] = { date: key, stamps };
     }
     setCalendarData(newData);
-  };
+  }, [userId, year, month, supabase]);
+
+  useEffect(() => {
+    fetchMonthData();
+  }, [fetchMonthData]);
 
   const addStamp = async (date: string, stamp: StampType) => {
     const current = calendarData[date]?.stamps || [];
@@ -97,7 +101,9 @@ export const useCalendarData = (
 
       if (stampError) throw stampError;
     } catch (e) {
-      console.error("addStamp error:", e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("addStamp error:", e);
+      }
       setCalendarData(calendarData);
     } finally {
       setSyncing(false);
@@ -144,7 +150,9 @@ export const useCalendarData = (
         await supabase.from("day_data").delete().eq("id", dayData.id);
       }
     } catch (e) {
-      console.error("deleteStamp error:", e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("deleteStamp error:", e);
+      }
       setCalendarData(calendarData);
     } finally {
       setSyncing(false);
@@ -189,7 +197,9 @@ export const useCalendarData = (
 
       if (stampError) throw stampError;
     } catch (e) {
-      console.error("updateComment error:", e);
+      if (process.env.NODE_ENV === "development") {
+        console.error("updateComment error:", e);
+      }
       setCalendarData(calendarData);
     } finally {
       setSyncing(false);
