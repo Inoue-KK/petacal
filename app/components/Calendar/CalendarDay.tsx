@@ -21,7 +21,7 @@ export default function CalendarDay({
   return (
     <div
       className={`
-      h-full p-2 overflow-hidden transition
+      h-full p-2 overflow-hidden transition flex flex-col
       ${isCurrentMonth ? "bg-white cursor-pointer" : "bg-gray-50"}
       ${isToday ? "border-2" : "border border-gray-200"}
     `}
@@ -52,9 +52,9 @@ export default function CalendarDay({
       >
         {day}
       </div>
-      <div className="flex flex-wrap gap-0.5 justify-center items-center h-10">
+      <div className="flex-1 flex flex-wrap gap-0.5 justify-center items-center content-center">
         {stamps?.map((stamp) => (
-          <span key={stamp.id} className="text-lg leading-none">
+          <span key={stamp.id} className="leading-none" style={{ fontSize: 'clamp(0.6rem, 3vw, 1.125rem)' }}>
             {stamp.emoji}
           </span>
         ))}
