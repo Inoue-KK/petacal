@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Petacal
+ 
+手帳型カレンダーに小さなシールを貼る、あのシンプルなスケジュール管理をWebで再現したカレンダーアプリです。  
+細かい時間設定に縛られず、その日の気分や活動を「スタンプ」として記録することに特化しています。
 
-## Getting Started
+Petacal is a web-based calendar application designed for activity tracking through digital stamps, inspired by the practice of using stickers in physical planners.
+ 
+**Demo**: [https://petacal.vercel.app/](https://petacal.vercel.app/)
+ 
+| Calendar | Stamp Picker | Login |
+|---|---|---|
+| ![calendar](./docs/screenshots/calendar.png) | ![stamp](./docs/screenshots/stamp-picker.png) | ![login](./docs/screenshots/login.png) |
+ 
+---
+ 
+## 技術仕様 / Technical Specifications
+ 
+1. セキュリティとプライバシー / Security & Privacy
 
-First, run the development server:
+   ユーザーデータの機密性を担保するため、以下の暗号化プロトコルを実装している。  
+   To ensure the confidentiality of user data, the following cryptographic protocols are implemented:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    - **クライアントサイド暗号化 / Client-side Encryption**  
+    Web Crypto API を利用し、スタンプに付随するコメントを AES-GCM モードで暗号化し保存。  
+    encrypted using AES-GCM via the Web Crypto API before being transmitted to the database.
+    - **鍵派生 / Key Derivation**  
+    ユーザー固有のIDとランダムソルトを用い、PBKDF2で暗号鍵を派生。  
+    Encryption keys are derived from unique user IDs using PBKDF2 with a random salt.
+    - **アクセス制御 / Access Control**  
+    SupabaseのRLSポリシーにより、全操作をユーザーID単位で厳格に分離。  
+    Strict Row Level Security (RLS) policies in Supabase isolate all CRUD operations by user ID.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. データエンジニアリング / Data Engineering
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    データの整合性とパフォーマンスを最適化するため、以下の設計を採用している。  
+    The database schema and logic are optimized for referential integrity and performance.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    - **スキーマの正規化 / Data Engineering**  
+    冗長なカラムを排除し、マスターデータからのIDルックアップ方式を採用。  
+    Redundant metadata was removed from the `stamps` table in favor of an ID-based lookup system from master data.
+    - **自動クリーンアップ / Automated Cleanup**  
+    スタンプ全削除時に、孤立したday_dataレコードを自動的に削除するロジックを実装。  
+    Logic is implemented to delete orphaned `day_data` records when the last associated stamp is removed.
 
-## Learn More
+1. フロントエンド構成 / Frontend Architecture
 
-To learn more about Next.js, take a look at the following resources:
+    Next.js 15の機能を活用し、効率的なインターフェースを構築している。  
+    The application leverages Next.js 15 and modern state management patterns.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    - **状態の永続化 / State Persistence**  
+    表示月をURLクエリパラメータと同期し、ブラウザのリロード後も表示状態を維持。  
+    The displayed month is synchronized with URL query parameters to maintain state across page reloads.
+    - **I/Oの最適化 / I/O Optimization**  
+    コメント保存に500msのデバウンスを適用し、データベースへの書き込み頻度を抑制。  
+    A 500ms debounce is applied to comment updates to minimize database write frequency and optimize network traffic.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+ 
+## 技術スタック / Tech Stack
+ 
+| Category | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth (Google OAuth) |
+| Hosting | Vercel |
+ 
+---
+ 
+## License
+ 
+MIT License
